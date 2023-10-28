@@ -42,15 +42,15 @@ def compute_theta(l1, l2, alpha, gamma):
 origin1 = np.array([[0, 0, 0]]).T
 
 # Platform radius
-h1 = 10
-h2 = 8
+h1 = 6.0
+h2 = 8.0
 
 # Leg length
-l1 = 6
-l2 = 8
+l1 = 4.5
+l2 = 9
 
 # Initial values of the desired efector's position and angle
-offset = 10
+offset = 7
 x_angle = 0
 y_angle = 0
 
@@ -143,8 +143,9 @@ while i < 100:
     ax.set_zlim(0, 12)
     fig.canvas.draw()
     plt.pause(0.01)
+    print(f'offset: {offset:<20}, x_angle: {x_angle:<20}, y_angle: {y_angle:<20}, theta_1: {np.degrees(theta1[0]):<20}, theta_2: {np.degrees(theta2[0]):<20}, theta_3: {np.degrees(theta3[0]):<20}')
 
-    offset -= 0.035
+    #offset -= 0.035
     x_angle += 0.1
     y_angle += 0.05
     i += 1
