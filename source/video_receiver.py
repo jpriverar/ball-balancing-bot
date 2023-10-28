@@ -9,9 +9,11 @@ port = 8080
 receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 receiver_socket.bind((host, port))
 receiver_socket.listen(1)
+print(f"Listening for connection on port {port}")
 
 # Accept a connection from the sender
 sender_socket, sender_address = receiver_socket.accept()
+print(f"Received connection from {sender_address}")
 
 data = b""
 payload_size = struct.calcsize("!L")

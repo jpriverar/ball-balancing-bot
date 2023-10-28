@@ -2,13 +2,14 @@ import cv2
 import socket
 import struct
 
-host = "192.168.100.10"
+host = "192.168.100.192"
 port = 8080
 
+print(f"Trying to stablish connection with {host}:{port}")
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((host, port))
 
-# Open a video capture object using OpenCV
+print("Connection successful, starting video stream")
 cap = cv2.VideoCapture(0)  # Use 0 for the default camera or specify the video file path
 
 while True:
