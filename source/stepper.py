@@ -30,8 +30,8 @@ class Stepper:
             return
         
         steps = self.degrees_to_steps(angle)
-        dir = 1 if angle >= 0 else  0
-        self.move(dir, steps)
+        dir_val = 0 if angle >= 0 else  1
+        self.move(dir_val, steps)
         self.angle = angle
         
 
@@ -39,8 +39,8 @@ class Stepper:
         self.set_angle(self.angle + angle)
 
 
-    def move(self, dir: int, steps: int):
-        GPIO.output(self.dir_pin, dir)
+    def move(self, dir_val: int, steps: int):
+        GPIO.output(self.dir_pin, dir_val)
 
         for _ in range(steps):
             # 500 us square pulse
@@ -54,17 +54,25 @@ class Stepper:
 
 
     def degrees_to_steps(self, degrees: float) -> int:
-        steps = int((degrees * Stepper.steps_per_revolution * self.ustep)/360)
+        steps = int((abs(degrees) * Stepper.steps_per_revolution * self.ustep)/360)
         return steps
 
 
     
 if __name__ == '__main__':
+
+    GPIO.setmode(GPIO.BCM)
+
     stepper1 = Stepper(23, 18, 25, 24)
     stepper2 = Stepper(27, 22, 4, 17)
     stepper3 = Stepper(5, 6, 19, 13)
 
     steppers = (stepper1, stepper2, stepper3)
 
-    for stepper in steppers:
-        stepper.set_angle(20)
+    angle = 10
+    while True:
+        for stepper in steppers:
+            stepper.set_angle(angle)
+        angle *= -1
+
+
