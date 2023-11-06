@@ -3,7 +3,7 @@ import socket
 import struct
 import numpy as np
 
-host = "localhost"
+host = "0.0.0.0"
 port = 8080
 
 receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,7 +30,7 @@ while True:
         data += sender_socket.recv(4096)
 
     frame_data = data[:msg_size]
-    data = data[msg_size]
+    data = data[msg_size:]
 
     # Convert the frame data back to a NumPy array
     frame = np.frombuffer(frame_data, dtype=np.uint8)
@@ -38,7 +38,7 @@ while True:
     # Decode the frame
     frame = cv2.imdecode(frame, 1)
     
-    # Display the received frame
+    # # Display the received frame
     cv2.imshow('Received Video', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
