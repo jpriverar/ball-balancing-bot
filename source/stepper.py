@@ -28,18 +28,19 @@ class Stepper:
     def set_angle(self, angle: float) -> None:
         if not Stepper.low_endstop < angle < Stepper.high_endstop:
             return
-        
-        steps = self.degrees_to_steps(angle)
+ 
+        steps = self.degrees_to_steps(angle - self.angle)
         dir_val = 0 if angle >= 0 else  1
         self.move(dir_val, steps)
         self.angle = angle
         
 
     def increase_angle(self, angle: float) -> None:
-        self.set_angle(self.angle + angle)
+        #self.set_angle(self.angle + angle)
+        pass
 
 
-    def move(self, dir_val: int, steps: int):
+    def move(self, dir_val: int, steps: int) -> None:
         GPIO.output(self.dir_pin, dir_val)
 
         for _ in range(steps):
