@@ -19,18 +19,35 @@ class Stepper:
         GPIO.setup(self.ms1, GPIO.OUT)
         GPIO.setup(self.ms2, GPIO.OUT)
 
-        # 16 microstepping
-        GPIO.output(self.ms1, 1)
-        GPIO.output(self.ms2, 1)
-        self.ustep = 16
+        # 16 microstepping by default - maximum precission and quiet
+        self.set_ustep(16)
+
+
+    def set_ustep(self, ustep: int) -> None:
+        if ustep not in [2,4,8,16]: 
+            print('WARNING: unvalid microstepping passed:', ustep)
+            return
+        if ustep == 2:
+            GPIO.output(self.ms1, 1)
+            GPIO.output(self.ms2, 0)
+        elif ustep == 4:
+            GPIO.output(self.ms1, 0)
+            GPIO.output(self.ms2, 1)
+        elif ustep == 8:
+            GPIO.output(self.ms1, 0)
+            GPIO.output(self.ms2, 0)
+        elif ustep == 16:
+            GPIO.output(self.ms1, 1)
+            GPIO.output(self.ms2, 2)
+        self.ustep = ustep
 
     
     def set_angle(self, angle: float) -> None:
         if not Stepper.low_endstop < angle < Stepper.high_endstop:
             return
  
-        steps = self.degrees_to_steps(angle - self.angle)
-        dir_val = 0 if angle >= 0 else  1
+        steps = self.degrees_to_steps(abs(angle - self.angle))
+        dir_val = 0 if angle > self.angle else  1
         self.move(dir_val, steps)
         self.angle = angle
         
@@ -55,9 +72,8 @@ class Stepper:
 
 
     def degrees_to_steps(self, degrees: float) -> int:
-        steps = int((abs(degrees) * Stepper.steps_per_revolution * self.ustep)/360)
+        steps = int((degrees * Stepper.steps_per_revolution * self.ustep)/360)
         return steps
-
 
     
 if __name__ == '__main__':
