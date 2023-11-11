@@ -50,7 +50,7 @@ l1 = 4.5
 l2 = 9
 
 # Initial values of the desired efector's position and angle
-offset = 7
+offset = 8
 x_angle = 0
 y_angle = 0
 
@@ -145,9 +145,9 @@ while i < 100:
     plt.pause(0.01)
     print(f'offset: {offset:<20}, x_angle: {x_angle:<20}, y_angle: {y_angle:<20}, theta_1: {np.degrees(theta1[0]):<20}, theta_2: {np.degrees(theta2[0]):<20}, theta_3: {np.degrees(theta3[0]):<20}')
 
-    #offset -= 0.035
-    x_angle += 0.1
-    y_angle += 0.05
+    offset += 0.1
+    #x_angle -= 0.25
+    #y_angle += 0.05
     i += 1
 
 plt.ioff()
