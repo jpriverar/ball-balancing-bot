@@ -14,20 +14,27 @@ class RRSManipulator:
         self.l2 = high_arm_length
         self.__init_joint_coordinates()
 
-        stepper1 = Stepper(23, 18, 25, 24, 0)
+        stepper1 = Stepper(23, 18, 25, 24, 0) 
         stepper2 = Stepper(5, 6, 19, 13, 0)
         stepper3 = Stepper(27, 22, 4, 17, 0)
         self.steppers = (stepper1, stepper2, stepper3)
 
+        self.offset = 0
+        self.x_angle = 0
+        self.y_angle = 0        
 
-    def home(self):
-        self.set_motor_angles([0,0,0])
+
+    def home(self) -> None:
+        self.set_pose(8,0,0)
+    
+    def set_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
+        angles = self.compute_motor_angles(offset, x_angle, y_angle)
+        self.set_motor_angles(angles)
 
     
-    def set_motor_angles(self, angles: list):
+    def set_motor_angles(self, angles: list[float]) -> None:
         if len(angles) != 3:
-            print("ERROR: must pass 3 angles!")
-            return
+            raise ValueError('Expected list of 3 angles...')
 
         threads = []
         for stepper, angle in zip(self.steppers, angles):
@@ -37,13 +44,17 @@ class RRSManipulator:
 
         for th in threads:
             th.join()
-            
 
-    def set_motor_angle(self, stepper: Stepper, angle: float):
+
+    def get_motor_angles(self) -> list[float]:
+        return [stepper.angle for stepper in self.steppers]    
+        
+
+    def set_motor_angle(self, stepper: Stepper, angle: float) -> None:
         stepper.set_angle(angle)
 
 
-    def get_actuator_angles(self, offset, x_angle, y_angle):
+    def compute_motor_angles(self, offset: float, x_angle: float, y_angle: float) -> list[float]:
         angles = []
 
         # Get the platform leg points seen from the base origin perspective
@@ -88,20 +99,24 @@ if __name__ == '__main__':
                    low_arm_length = 4.5,
                    high_arm_length = 9.0)
     
-    #bot.home()
+    bot.home()
+    print(bot.get_motor_angles())
+    print()
+    time.sleep(3)
     #bot.set_motor_angle(bot.steppers[2], 20)
 
-
-    x_angles = np.linspace(10, -10, 100)
-    y_angles = np.linspace(10, -10, 100)
-    offsets = np.linspace(8, 10, 100)
-    #offsets = np.ones(100)*8
-    #x_angles = [0,0,0,0,0]
-    #y_angles = [0,0,0,0,0]
-    #offsets = [8,8.5,9,9.5,10]
-    
+    offsets = np.ones(50)*8
+    x_angles = 10*np.sin(np.linspace(0, 6*np.pi, 50))
+    y_angles = 10*np.cos(np.linspace(0, 6*np.pi, 50)) 
 
     for i in range(len(x_angles)):
-        angles = bot.get_actuator_angles(offsets[i], x_angles[i], y_angles[i])
-        print(offsets[i], x_angles[i], y_angles[i], "-->", angles)
-        bot.set_motor_angles(angles)
+        bot.set_pose(offsets[i], x_angles[i], y_angles[i])
+        print(offsets[i], x_angles[i], y_angles[i])
+        print(bot.get_motor_angles())
+        print()
+
+    time.sleep(3)
+    bot.home()
+    print(bot.get_motor_angles())
+
+    

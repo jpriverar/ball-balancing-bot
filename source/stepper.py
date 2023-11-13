@@ -44,30 +44,28 @@ class Stepper:
     
     def set_angle(self, angle: float) -> None:
         if not Stepper.low_endstop < angle < Stepper.high_endstop:
-            return
+            raise ValueError('Angle is outside the stepper endstops')
  
         steps = self.degrees_to_steps(abs(angle - self.angle))
-        dir_val = 0 if angle > self.angle else  1
+        dir_val = 0 if angle > self.angle else 1
         self.move(dir_val, steps)
-        self.angle = angle
-        
-
-    def increase_angle(self, angle: float) -> None:
-        #self.set_angle(self.angle + angle)
-        pass
 
 
     def move(self, dir_val: int, steps: int) -> None:
-        GPIO.output(self.dir_pin, dir_val)
+        degree_sign = -1 if dir_val else 1
+        degrees_per_step = 1.8 * degree_sign / self.ustep
 
-        for _ in range(steps):
+        GPIO.output(self.dir_pin, dir_val)
+        for i in range(steps):
             # 500 us square pulse
             GPIO.output(self.step_pin, 1)
             time.sleep(0.0005)
             GPIO.output(self.step_pin, 0)
+            time.sleep(0.0005)
+            self.angle += degrees_per_step
 
             # Delay to control speed
-            delay = 0.001
+            delay = 0.005 - (0.004*(steps-i)/steps) 
             time.sleep(delay)
 
 
