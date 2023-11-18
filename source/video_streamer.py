@@ -18,8 +18,7 @@ start = time.time()
 
 while True:
     ret, frame = cap.read()
-
-    frame = cv2.resize(frame, (int(frame.shape[1]*0.80), int(frame.shape[0]*0.80)))
+    frame = frame[80:420,100:500,:] # Taking only the roi
 
     # Serialize the image
     frame_data = cv2.imencode('.jpg', frame)[1]

@@ -25,20 +25,21 @@ class RRSManipulator:
 
 
     def home(self) -> None:
-        self.set_pose(8,0,0)
-    
-    def set_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
+        self.move_pose(8,0,0)
+   
+
+    def move_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
         angles = self.compute_motor_angles(offset, x_angle, y_angle)
-        self.set_motor_angles(angles)
+        self.move_motor_angles(angles)
 
     
-    def set_motor_angles(self, angles: list[float]) -> None:
+    def move_motor_angles(self, angles: list[float]) -> None:
         if len(angles) != 3:
             raise ValueError('Expected list of 3 angles...')
 
         threads = []
         for stepper, angle in zip(self.steppers, angles):
-            th = Thread(target=self.set_motor_angle, args=(stepper, angle))
+            th = Thread(target=stepper.move_angle, args=(angle,))
             threads.append(th)
             th.start()
 
@@ -48,10 +49,11 @@ class RRSManipulator:
 
     def get_motor_angles(self) -> list[float]:
         return [stepper.angle for stepper in self.steppers]    
-        
 
-    def set_motor_angle(self, stepper: Stepper, angle: float) -> None:
-        stepper.set_angle(angle)
+
+    def set_motor_angles(self, angles: list[float]) -> None:
+        for stepper, angle in zip(self.steppers, angles):
+            stepper.set_angle(angle)
 
 
     def compute_motor_angles(self, offset: float, x_angle: float, y_angle: float) -> list[float]:
@@ -99,6 +101,8 @@ if __name__ == '__main__':
                    low_arm_length = 4.5,
                    high_arm_length = 9.0)
     
+
+    bot.set_motor_angles([90,90,90])
     bot.home()
     print(bot.get_motor_angles())
     print()
@@ -110,7 +114,7 @@ if __name__ == '__main__':
     y_angles = 10*np.cos(np.linspace(0, 6*np.pi, 50)) 
 
     for i in range(len(x_angles)):
-        bot.set_pose(offsets[i], x_angles[i], y_angles[i])
+        bot.move_pose(offsets[i], x_angles[i], y_angles[i])
         print(offsets[i], x_angles[i], y_angles[i])
         print(bot.get_motor_angles())
         print()

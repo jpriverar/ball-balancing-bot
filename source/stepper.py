@@ -5,7 +5,7 @@ class Stepper:
 
     steps_per_revolution: int = 200
     low_endstop: float = -20
-    high_endstop: float = 75 
+    high_endstop: float = 90 
 
     def __init__(self, step_pin: int, dir_pin: int, ms1_pin: int, ms2_pin: int, starting_angle: float = 0) -> None:
         self.step_pin = step_pin
@@ -43,7 +43,13 @@ class Stepper:
 
     
     def set_angle(self, angle: float) -> None:
-        if not Stepper.low_endstop < angle < Stepper.high_endstop:
+        if not Stepper.low_endstop <= angle <= Stepper.high_endstop:
+            raise ValueError('Angle is outside the stepper endstops')
+        self.angle = angle
+
+
+    def move_angle(self, angle: float) -> None:
+        if not Stepper.low_endstop <= angle <= Stepper.high_endstop:
             raise ValueError('Angle is outside the stepper endstops')
  
         steps = self.degrees_to_steps(abs(angle - self.angle))
@@ -87,7 +93,7 @@ if __name__ == '__main__':
     angle = 10
     while True:
         for stepper in steppers:
-            stepper.set_angle(angle)
+            stepper.move_angle(angle)
         angle *= -1
 
 
