@@ -82,6 +82,7 @@ def save_calibration_params(params):
     with open(param_file, 'w') as file:
         params_json = json.dumps(params, indent=4)
         file.write(params_json)
+    print("Calibration parameters saved successfully")
 
 
 if __name__ == "__main__":
@@ -93,18 +94,17 @@ if __name__ == "__main__":
     data = b""
     payload_size = struct.calcsize("!L")
 
-
     params = load_calibration_params()
 
     # Defining color mask initial values
-    global low_vals, high_vals, max_vals
-    low_vals = params['base_color']['low']
-    max_vals = np.array([255, 255, 255], dtype=np.uint8)
+    low_vals = np.array(params['color_thresholds']['platform']['low'], dtype=np.uint8)
+    high_vals = np.array(params['color_thresholds']['platform']['high'], dtype=np.uint8)
+    max_vals = np.array([255,255,255])
     create_color_calibration_window('color_calibration', 'LAB')
 
     # Defining edge initial values
-    min_val = 50
-    max_val = 150
+    min_val = params['edge_thresholds']['min']
+    max_val = params['edge_thresholds']['max']
     create_edge_calibration_window('edge_calibration')    
 
     while True:
@@ -152,3 +152,10 @@ if __name__ == "__main__":
     # Release the video window and close the sockets when done
     cv2.destroyAllWindows()
     sock.close()
+
+    # Updating params with ending values
+    params['color_thresholds']['platform']['low'] = low_vals.tolist()
+    params['color_thresholds']['platform']['high'] = high_vals.tolist()
+    params['edge_thresholds']['min'] = min_val
+    params['edge_thresholds']['max'] = max_val
+    save_calibration_params(params)
