@@ -45,16 +45,11 @@ def on_max_val_trackbar(val):
     max_val = val
 
 
-def stablish_connection(host, port):
-    receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def listen_for_connection(host, port):
+    receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     receiver_socket.bind((host, port))
-    receiver_socket.listen(1)
     print(f"Listening for connection on port {port}")
-
-    # Accept a connection from the sender
-    sender_socket, sender_address = receiver_socket.accept()
-    print(f"Received connection from {sender_address}")
-    return sender_socket
+    return receiver_socket
 
 
 def create_color_calibration_window(window_name, colorspace):
@@ -89,9 +84,10 @@ if __name__ == "__main__":
 
     host = "0.0.0.0"
     port = 8080
-    sock = stablish_connection(host, port)
+    sock = listen_for_connection(host, port)
 
     data = b""
+    max_datagram_size = 65536
     payload_size = struct.calcsize("!L")
 
     params = load_calibration_params()
@@ -108,20 +104,20 @@ if __name__ == "__main__":
     create_edge_calibration_window('edge_calibration')    
 
     while True:
-        while len(data) < payload_size:
-            data += sock.recv(4096)
-        packed_msg_size = data[:payload_size]
-        data = data[payload_size:]
-        msg_size = struct.unpack("!L", packed_msg_size)[0]
+        # while len(data) < payload_size:
+        #     data += sock.recvfrom(4096)[0] # Ignore the address
+        # packed_msg_size = data[:payload_size]
+        # data = data[payload_size:]
+        # msg_size = struct.unpack("!L", packed_msg_size)[0]
 
-        while len(data) < msg_size:
-            data += sock.recv(4096)
-        frame_data = data[:msg_size]
-        data = data[msg_size:]
+        #while len(data) < msg_size:
+        frame_data = sock.recvfrom(max_datagram_size)[0]
+        #frame_data = data[:msg_size]
+        #data = data[msg_size:]
 
         # Convert the frame data back to a NumPy array
-        frame = np.frombuffer(frame_data, dtype=np.uint8)
-        frame = cv2.imdecode(frame, 1)
+        frame_raw = np.frombuffer(frame_data, dtype=np.uint8)
+        frame = cv2.imdecode(frame_raw, 1)
 
         # Chanding to HSV and filtering
         blurred_frame = cv2.GaussianBlur(frame, (5,5), 0)
