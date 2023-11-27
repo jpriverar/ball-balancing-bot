@@ -225,7 +225,6 @@ if __name__ == "__main__":
         contours, _ = cv2.findContours(platform_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contours:
             contour = sorted(contours, key=cv2.contourArea, reverse=True)[0].squeeze()
-            #epsilon = 0.001 * cv2.arcLength(contour, True)
             hull = cv2.convexHull(contour)
             cv2.drawContours(geo_frame, [hull], 0, (0,255,0), 2)
 
