@@ -9,14 +9,14 @@
             "high": [
                 255,
                 255,
-                255
+                110
             ]
         },
         "ball": {
             "low": [
                 0,
                 0,
-                0
+                150
             ],
             "high": [
                 255,
@@ -25,8 +25,9 @@
             ]
         }
     },
-    "edge_thresholds": {
-        "min": 50,
-        "max": 150
-    }
+    "edge_detection": {
+        "thresh_min": 50,
+        "thresh_max": 150
+    },
+    "platform_yaw": 22
 }
