@@ -1,5 +1,4 @@
 import cv2
-import struct
 import numpy as np
 import time
 from utils import *
@@ -142,10 +141,6 @@ if __name__ == "__main__":
     port = 8080
     sock = listen_for_connection(host, port)
 
-    data = b""
-    max_datagram_size = 65536
-    payload_size = struct.calcsize("!L")
-
     params = load_calibration_params()
 
     # Defining platform color mask initial values
@@ -169,7 +164,7 @@ if __name__ == "__main__":
     count = 0
     start = time.time()
     while True:
-        frame_data = sock.recvfrom(max_datagram_size)[0]
+        frame_data = sock.recvfrom(65536)[0]
 
         # Convert the frame data back to a NumPy array
         frame_raw = np.frombuffer(frame_data, dtype=np.uint8)
