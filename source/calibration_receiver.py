@@ -85,16 +85,6 @@ def on_ball_high_2_thresh_trackbar(val):
     ball_high_vals[2] = val
 
 
-def on_min_val_trackbar(val):
-    global min_val
-    min_val = val
-
-
-def on_max_val_trackbar(val):
-    global max_val
-    max_val = val
-
-
 def on_rotation_val_trackbar(val):
     global platform_rotation
     platform_rotation = val
@@ -120,12 +110,6 @@ def create_ball_color_calibration_window(window_name, colorspace):
     for i, channel in enumerate(colorspace):
         cv2.createTrackbar(f'Low {channel}', window_name, ball_low_vals[i], 255, globals()[f'on_ball_low_{i}_thresh_trackbar'])
         cv2.createTrackbar(f'High {channel}', window_name, ball_high_vals[i], 255, globals()[f'on_ball_high_{i}_thresh_trackbar']) 
-
-
-def create_edge_calibration_window(window_name):
-    cv2.namedWindow(window_name)
-    cv2.createTrackbar('Min', window_name, min_val, 255, on_min_val_trackbar)
-    cv2.createTrackbar('Max', window_name, max_val, 255, on_max_val_trackbar)
 
 
 def create_rotation_calibration_window(window_name):
@@ -178,11 +162,6 @@ if __name__ == "__main__":
     ball_contrast = params['ball']['contrast']
     create_ball_color_calibration_window('ball_calibration', 'LAB')
 
-    # Defining edge initial values
-    min_val = params['edge_detection']['thresh_min']
-    max_val = params['edge_detection']['thresh_max']
-    create_edge_calibration_window('edge_calibration') 
-
     # Defining platform rotation initial value
     platform_rotation = params['platform']['rotation'] 
     create_rotation_calibration_window('rotation_calibration')
@@ -225,8 +204,8 @@ if __name__ == "__main__":
         # Extracting edges form the masks
         blurred_platform = cv2.GaussianBlur(platform_mask, (5,5), 0)
         blurred_ball = cv2.GaussianBlur(ball_mask, (5,5), 0)
-        platform_edges = cv2.Canny(blurred_platform, min_val, max_val)
-        ball_edges = cv2.Canny(blurred_ball, min_val, max_val)
+        platform_edges = cv2.Canny(blurred_platform, 150, 255)
+        ball_edges = cv2.Canny(blurred_ball, 150, 255)
 
         # Getting the platform contours and drawing them
         geo_frame = frame.copy()
@@ -303,6 +282,4 @@ if __name__ == "__main__":
     params['ball']['high_threshold'] = ball_high_vals.tolist()
     params['ball']['brightness'] = ball_brightness
     params['ball']['contrast'] = ball_contrast
-    params['edge_detection']['thresh_min'] = min_val
-    params['edge_detection']['thresh_max'] = max_val
     save_calibration_params(params)

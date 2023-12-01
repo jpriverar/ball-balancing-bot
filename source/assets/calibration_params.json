@@ -1,33 +1,36 @@
 {
-    "color_thresholds": {
-        "platform": {
-            "low": [
-                0,
-                0,
-                0
-            ],
-            "high": [
-                255,
-                255,
-                110
-            ]
-        },
-        "ball": {
-            "low": [
-                0,
-                0,
-                150
-            ],
-            "high": [
-                255,
-                255,
-                255
-            ]
-        }
+    "platform": {
+        "low_threshold": [
+            0,
+            0,
+            0
+        ],
+        "high_threshold": [
+            255,
+            255,
+            105
+        ],
+        "rotation": 22,
+        "brightness": 0,
+        "contrast": 2
     },
-    "edge_detection": {
-        "thresh_min": 50,
-        "thresh_max": 150
+    "ball": {
+        "low_threshold": [
+            0,
+            0,
+            140
+        ],
+        "high_threshold": [
+            255,
+            255,
+            255
+        ],
+        "brightness": 29,
+        "contrast": 2
     },
-    "platform_yaw": 22
+    "controller": {
+        "kp": 1.0,
+        "kd": 0.0,
+        "ki": 0.0
+    }
 }
