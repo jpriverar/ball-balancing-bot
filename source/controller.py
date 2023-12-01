@@ -1,13 +1,9 @@
-import numpy as np
-from calibration_receiver import load_calibration_params
-import time
 
 class Controller:
-    def __init__(self):
-        params = load_calibration_params
-        self.kp = params['controller']['kp']
-        self.kd = params['controller']['kd']
-        self.ki = params['controller']['kd']
+    def __init__(self, params):
+        self.kp = params['kp']
+        self.kd = params['kd']
+        self.ki = params['kd']
 
         # Dervative and Integral errors
         self.err_prev = 0
