@@ -1,5 +1,4 @@
 import numpy as np
-from threading import Thread
 import RPi.GPIO as GPIO
 from stepper import Stepper
 from inverse_kinematics import transformation_matrix_homogenous, compute_alpha, compute_theta
@@ -37,14 +36,8 @@ class RRSManipulator:
         if len(angles) != 3:
             raise ValueError('Expected list of 3 angles...')
 
-        threads = []
         for stepper, angle in zip(self.steppers, angles):
-            th = Thread(target=stepper.move_angle, args=(angle,))
-            threads.append(th)
-            th.start()
-
-        for th in threads:
-            th.join()
+            stepper.move_angle(angle)
 
 
     def get_motor_angles(self) -> list[float]:
@@ -118,6 +111,7 @@ if __name__ == '__main__':
         print(offsets[i], x_angles[i], y_angles[i])
         print(bot.get_motor_angles())
         print()
+        time.sleep(0.5)
 
     time.sleep(3)
     bot.home()
