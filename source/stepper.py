@@ -3,7 +3,6 @@ import time
 from threading import Thread, Lock, Event
 
 class Stepper:
-
     steps_per_revolution: int = 200
     low_endstop: float = -20
     high_endstop: float = 90 
@@ -25,6 +24,10 @@ class Stepper:
 
         # 16 microstepping by default - maximum precission and quiet
         self.set_ustep(16)
+
+    @property
+    def is_moving(self):
+        return self.moving.is_set()
 
 
     def set_ustep(self, ustep: int) -> None:

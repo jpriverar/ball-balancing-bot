@@ -25,6 +25,9 @@ class RRSManipulator:
 
     def home(self) -> None:
         self.move_pose(8,0,0)
+        while True:
+            if all([not stepper.is_moving() for stepper in self.stepper]):
+                break
    
 
     def move_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
