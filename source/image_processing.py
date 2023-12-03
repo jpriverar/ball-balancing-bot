@@ -25,23 +25,25 @@ class ImageProcessor:
 
     
     def find_platform(self, frame):
-        mask = cv2.inRange(frame, self.platform_params['low_platform'], self.platform_params['high_platform'])
+        mask = cv2.inRange(frame, np.array(self.platform_params['low_threshold'], dtype=np.uint8), np.array(self.platform_params['high_threshold'], dtype=np.uint8))
         blurred = cv2.GaussianBlur(mask, (5,5), 0)
         edges = cv2.Canny(blurred, 150, 255)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if contours:
-            contour = sorted(contours, key=cv2.contourArea, reverse=True)[0].squeeze()
-            hull = cv2.convexHull(contour)
-            center = get_contour_centroid(hull)
+        if not contours: return None
+        
+        contour = sorted(contours, key=cv2.contourArea, reverse=True)[0].squeeze()
+        hull = cv2.convexHull(contour)
+        center = get_contour_centroid(hull)
         return center
 
 
     def find_ball(self, frame):
-        mask = cv2.inRange(frame, self.ball_params['low_platform'], self.ball_params['high_platform'])
+        mask = cv2.inRange(frame, np.array(self.ball_params['low_threshold'], dtype=np.uint8), np.array(self.ball_params['high_threshold'], dtype=np.uint8))
         blurred = cv2.GaussianBlur(mask, (5,5), 0)
         edges = cv2.Canny(blurred, 150, 255)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if contours:
-            contour = sorted(contours, key=cv2.contourArea, reverse=True)[0].squeeze()
-            center = get_contour_centroid(contour)
+        if not contours: return None
+
+        contour = sorted(contours, key=cv2.contourArea, reverse=True)[0].squeeze()
+        center = get_contour_centroid(contour)
         return center

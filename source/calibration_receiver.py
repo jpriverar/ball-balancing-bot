@@ -174,8 +174,8 @@ if __name__ == "__main__":
         ball_frame = frame.copy()
 
         # Enhancing brigthness
-        platform_frame = np.clip(platform_frame + platform_brightness, 0, 255)
-        ball_frame = np.clip(ball_frame + ball_brightness, 0, 255)
+        platform_frame = np.uint8(np.clip(np.int32(platform_frame) + platform_brightness, 0, 255))
+        ball_frame = np.uint8(np.clip(np.int32(ball_frame) + ball_brightness, 0, 255))
 
         # Enhancing contrast
         platform_frame = np.uint8(np.clip(platform_frame * platform_contrast, 0, 255))
@@ -217,7 +217,7 @@ if __name__ == "__main__":
             center, radius = cv2.minEnclosingCircle(hull)
             center = tuple(map(int, center))
             radius = int(radius)
-            cv2.circle(geo_frame, center, radius, (0,0,255), 2, line_type=cv2.LINE_AA)
+            cv2.circle(geo_frame, center, radius, (0,0,255), 2, lineType=cv2.LINE_AA)
 
             line_frame = np.zeros_like(platform_mask)
             for angle in np.linspace(0,300,6):
@@ -234,7 +234,7 @@ if __name__ == "__main__":
 
             center = get_contour_centroid(hull)
             #x_point, y_point = get_platform_axes(intersection_points)
-            cv2.circle(frame, center, 3, (0,0,255), -1, line_type=cv2.LINE_AA)
+            cv2.circle(frame, center, 3, (0,0,255), -1, lineType=cv2.LINE_AA)
             #cv2.line(frame, center, y_point, (0,255,0), 2)
             #cv2.line(frame, center, x_point, (0,255,255), 2)
 
@@ -244,7 +244,7 @@ if __name__ == "__main__":
             cv2.drawContours(geo_frame, [contour], 0, (0,255,0), 2)
 
             ball_center = get_contour_centroid(contour)
-            cv2.circle(frame, ball_center, 3, (0,0,255), -1, line_type=cv2.LINE_AA)
+            cv2.circle(frame, ball_center, 3, (0,0,255), -1, lineType=cv2.LINE_AA)
             
         
         # Display the received frame
