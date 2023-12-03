@@ -39,4 +39,4 @@ def get_contour_centroid(contour):
 def draw_polar_line(frame, center, rho, theta):
         x = center[0] + int(rho * np.cos(np.radians(theta)))
         y = center[1] - int(rho * np.sin(np.radians(theta)))
-        cv2.line(frame, center, (x,y), (255,255,255), 3, line_type=cv2.LINE_AA)
+        cv2.line(frame, center, (x,y), (255,255,255), 3, lineType=cv2.LINE_AA)

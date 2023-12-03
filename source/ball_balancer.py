@@ -15,7 +15,7 @@ class BallBalancer:
         self.sock = listen_for_connection('0.0.0.0', 8080)
 
     
-    def find_elements(self, frame):
+    def __find_elements(self, frame):
         ball_frame = self.image_processor.preprocess_ball_frame(frame)
         platform_frame = self.image_processor.preprocess_ball_frame(frame)
         ball_pos = self.image_processor.find_ball(ball_frame)
@@ -23,9 +23,9 @@ class BallBalancer:
         return platform_pos, ball_pos
     
 
-    def get_error_vec(self, platform_pos, ball_pos):
+    def __get_error_vec(self, platform_pos, ball_pos):
         error_vec = (np.array([ball_pos]) - np.array([platform_pos])).T
-        error_vec_aligned = np.dot(z_rot(self.rotation), error_vec)
+        error_vec_aligned = np.dot(z_rot(-self.rotation)[:2,:2], error_vec)
         return error_vec_aligned
 
     
@@ -39,8 +39,9 @@ class BallBalancer:
             frame_raw = np.frombuffer(frame_data, dtype=np.uint8)
             frame = cv2.imdecode(frame_raw, 1)
 
-            platform_pos, ball_pos = self.find_elements(frame)
-            error = self.get_error_vec(platform_pos, ball_pos)
+            platform_pos, ball_pos = self.__find_elements(frame)
+            if platform_pos is None or ball_pos is None: continue
+            error = self.__get_error_vec(platform_pos, ball_pos)
             print(error)
 
             # Compute the FPS
@@ -50,3 +51,8 @@ class BallBalancer:
                 print(f'fps: {fps}')
                 count = 0
                 start = time.time()
+
+
+if __name__ == "__main__":
+    balancer = BallBalancer()
+    balancer.loop()
