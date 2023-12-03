@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+from threading import Thread, Lock, Event
 
 class Stepper:
 
@@ -13,6 +14,9 @@ class Stepper:
         self.ms1 = ms1_pin
         self.ms2 = ms2_pin
         self.angle = starting_angle
+        self.move_lock = Lock()
+        self.stop = Event()
+        self.moving = Event()
 
         GPIO.setup(self.step_pin, GPIO.OUT)
         GPIO.setup(self.dir_pin, GPIO.OUT)
@@ -49,20 +53,27 @@ class Stepper:
 
 
     def move_angle(self, angle: float) -> None:
+        if self.moving.is_set():
+            self.stop()
+
         if not Stepper.low_endstop <= angle <= Stepper.high_endstop:
             raise ValueError('Angle is outside the stepper endstops')
  
         steps = self.degrees_to_steps(abs(angle - self.angle))
         dir_val = 0 if angle > self.angle else 1
-        self.move(dir_val, steps)
+        self.move_thread = Thread(target=self.move, args=(dir_val, steps,), daemon=True)
 
 
     def move(self, dir_val: int, steps: int) -> None:
+        self.moving.set()
         degree_sign = -1 if dir_val else 1
         degrees_per_step = 1.8 * degree_sign / self.ustep
 
         GPIO.output(self.dir_pin, dir_val)
         for i in range(steps):
+            # Check for stop
+            if self.stop.is_set(): break
+
             # 500 us square pulse
             GPIO.output(self.step_pin, 1)
             time.sleep(0.0005)
@@ -73,6 +84,13 @@ class Stepper:
             # Delay to control speed
             delay = 0.005 - (0.004*(steps-i)/steps) 
             time.sleep(delay)
+        self.moving.clear()
+
+    
+    def stop(self):
+        self.stop.set()
+        self.move_thread.join()
+        self.stop.clear()
 
 
     def degrees_to_steps(self, degrees: float) -> int:
