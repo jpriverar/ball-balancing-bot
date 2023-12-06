@@ -13,6 +13,7 @@ class RRSManipulator:
         self.l2 = high_arm_length
         self.__init_joint_coordinates()
 
+        GPIO.setmode(GPIO.BCM)
         stepper1 = Stepper(23, 18, 25, 24, 0) 
         stepper2 = Stepper(5, 6, 19, 13, 0)
         stepper3 = Stepper(27, 22, 4, 17, 0)
@@ -87,8 +88,6 @@ class RRSManipulator:
 
 
 if __name__ == '__main__':
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
 
     bot = RRSManipulator(base_radius = 6.0,
                    platform_radius = 8.0,
