@@ -14,7 +14,7 @@ class Stepper:
         self.ms2 = ms2_pin
         self.angle = starting_angle
         self.move_lock = Lock()
-        self.stop = Event()
+        self.stop_signal = Event()
         self.moving = Event()
 
         GPIO.setup(self.step_pin, GPIO.OUT)
@@ -65,6 +65,7 @@ class Stepper:
         steps = self.degrees_to_steps(abs(angle - self.angle))
         dir_val = 0 if angle > self.angle else 1
         self.move_thread = Thread(target=self.move, args=(dir_val, steps,), daemon=True)
+        self.move_thread.start()
 
 
     def move(self, dir_val: int, steps: int) -> None:
@@ -75,7 +76,8 @@ class Stepper:
         GPIO.output(self.dir_pin, dir_val)
         for i in range(steps):
             # Check for stop
-            if self.stop.is_set(): break
+            if self.stop_signal.is_set(): 
+                break
 
             # 500 us square pulse
             GPIO.output(self.step_pin, 1)
@@ -91,9 +93,9 @@ class Stepper:
 
     
     def stop(self):
-        self.stop.set()
+        self.stop_signal.set()
         self.move_thread.join()
-        self.stop.clear()
+        self.stop_signal.clear()
 
 
     def degrees_to_steps(self, degrees: float) -> int:

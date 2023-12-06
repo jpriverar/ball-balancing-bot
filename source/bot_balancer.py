@@ -3,6 +3,9 @@ import socket
 import struct
 import time
 from picamera2 import Picamera2
+import select
+import numpy as np
+from manipulator import RRSManipulator
 
 def init_camera_with_opencv():
     cap = cv2.VideoCapture(0)  # Use 0 for the default camera or specify the video file path
@@ -46,6 +49,12 @@ while True:
     #frame_size = struct.pack("!L", len(frame_data))    
     sock.sendto(frame_data, (host, port))
 
+    ready, _, _ = select.select([sock], [], [], 0)
+    if ready:
+        data_raw = sock.recvfrom(512)[0]
+        data = np.frombuffer(data_raw, dtype=np.float64)
+        print(data)
+    
     counter += 1
     if (counter % 20 == 0):
         fps = counter/(time.time() - start)

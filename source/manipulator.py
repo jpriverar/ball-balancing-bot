@@ -25,9 +25,7 @@ class RRSManipulator:
 
     def home(self) -> None:
         self.move_pose(8,0,0)
-        while True:
-            if all([not stepper.is_moving() for stepper in self.stepper]):
-                break
+        time.sleep(5)
    
 
     def move_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
@@ -109,12 +107,13 @@ if __name__ == '__main__':
     x_angles = 10*np.sin(np.linspace(0, 6*np.pi, 50))
     y_angles = 10*np.cos(np.linspace(0, 6*np.pi, 50)) 
 
-    for i in range(len(x_angles)):
-        bot.move_pose(offsets[i], x_angles[i], y_angles[i])
-        print(offsets[i], x_angles[i], y_angles[i])
-        print(bot.get_motor_angles())
-        print()
-        time.sleep(0.5)
+    #for i in range(len(x_angles)):
+    #    bot.move_pose(offsets[i], x_angles[i], y_angles[i])
+    #    print(offsets[i], x_angles[i], y_angles[i])
+    #    print(bot.get_motor_angles())
+    #    print()
+    #    time.sleep(0.05)
+    bot.move_pose(8.5, 0, 10)
 
     time.sleep(3)
     bot.home()
