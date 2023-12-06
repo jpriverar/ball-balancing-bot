@@ -178,8 +178,8 @@ if __name__ == "__main__":
         ball_frame = np.uint8(np.clip(np.int32(ball_frame) + ball_brightness, 0, 255))
 
         # Enhancing contrast
-        platform_frame = np.uint8(np.clip(platform_frame * platform_contrast, 0, 255))
-        ball_frame = np.uint8(np.clip(ball_frame * ball_contrast, 0, 255))
+        platform_frame = np.uint8(np.clip(np.int32(platform_frame) * platform_contrast, 0, 255))
+        ball_frame = np.uint8(np.clip(np.int32(ball_frame) * ball_contrast, 0, 255))
 
         # Changing to HSV and filtering
         blurred_platform = cv2.GaussianBlur(platform_frame, (5,5), 0)
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
         # Applying ball color threshold filter
         ball_mask = cv2.inRange(lab_ball, ball_low_vals, ball_high_vals)
-        ball_masked_frame = cv2.bitwise_and(platform_frame, frame, mask=ball_mask)
+        ball_masked_frame = cv2.bitwise_and(ball_frame, ball_frame, mask=ball_mask)
 
         # Extracting edges form the masks
         blurred_platform = cv2.GaussianBlur(platform_mask, (5,5), 0)
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         if contours:
             contour = sorted(contours, key=cv2.contourArea, reverse=True)[0].squeeze()
             hull = cv2.convexHull(contour)
-            cv2.drawContours(geo_frame, [hull], 0, (0,255,0), 2)
+            cv2.drawContours(geo_frame, [hull], 0, (255,0,0), 2)
 
             # Drawing the convex hull contour to extract lines
             hull_frame = np.zeros_like(platform_mask)
@@ -220,7 +220,8 @@ if __name__ == "__main__":
             cv2.circle(geo_frame, center, radius, (0,0,255), 2, lineType=cv2.LINE_AA)
 
             line_frame = np.zeros_like(platform_mask)
-            for angle in np.linspace(0,300,6):
+
+            for angle in np.linspace(30,330,6):
                 draw_polar_line(line_frame, center, radius, angle + platform_rotation)
                 draw_polar_line(geo_frame, center, radius, angle + platform_rotation)
 

@@ -9,16 +9,16 @@ class ImageProcessor:
 
 
     def preprocess_platform_frame(self, frame):
-        frame = np.clip(frame + self.platform_params['brightness'], 0, 255)
-        frame = np.uint8(np.clip(frame * self.platform_params['contrast'], 0, 255))
+        frame = np.uint8(np.clip(np.int32(frame) + self.platform_params['brightness'], 0, 255))
+        frame = np.uint8(np.clip(np.int32(frame) * self.platform_params['contrast'], 0, 255))
         blurred_frame = cv2.GaussianBlur(frame, (5,5), 0)
         lab_frame = cv2.cvtColor(blurred_frame, cv2.COLOR_BGR2LAB)
         return lab_frame
     
 
     def preprocess_ball_frame(self, frame):
-        frame = np.clip(frame + self.ball_params['brightness'], 0, 255)
-        frame = np.uint8(np.clip(frame * self.ball_params['contrast'], 0, 255))
+        frame = np.uint8(np.clip(np.int32(frame) + self.ball_params['brightness'], 0, 255))
+        frame = np.uint8(np.clip(np.int32(frame) * self.ball_params['contrast'], 0, 255))
         blurred_frame = cv2.GaussianBlur(frame, (5,5), 0)
         lab_frame = cv2.cvtColor(blurred_frame, cv2.COLOR_BGR2LAB)
         return lab_frame

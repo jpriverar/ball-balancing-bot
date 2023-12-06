@@ -12,7 +12,6 @@ class BallBalancer:
         self.x_controller = Controller(params['controller'])
         self.y_controller = Controller(params['controller'])
         self.image_processor = ImageProcessor(params['platform'], params['ball'])
-        self.sock = listen_for_connection('0.0.0.0', 8080)
 
     
     def __find_elements(self, frame):
@@ -25,24 +24,33 @@ class BallBalancer:
 
     def __get_error_vec(self, platform_pos, ball_pos):
         error_vec = (np.array([ball_pos]) - np.array([platform_pos])).T
-        error_vec_aligned = np.dot(z_rot(-self.rotation)[:2,:2], error_vec)
+        error_vec_aligned = np.dot(z_rot(np.radians(self.rotation-60))[:2,:2], error_vec)
         return error_vec_aligned
 
     
-    def loop(self):
+    def main_loop(self):
+        sock = listen_for_connection('0.0.0.0', 8080)
         count = 0
         start = time.time()
         while True:
-            frame_data = self.sock.recvfrom(65536)[0]
+            frame_data, address = sock.recvfrom(65536)
 
             # Convert the frame data back to a NumPy array
             frame_raw = np.frombuffer(frame_data, dtype=np.uint8)
             frame = cv2.imdecode(frame_raw, 1)
 
             platform_pos, ball_pos = self.__find_elements(frame)
-            if platform_pos is None or ball_pos is None: continue
-            error = self.__get_error_vec(platform_pos, ball_pos)
-            print(error)
+            if platform_pos and ball_pos: 
+                error = self.__get_error_vec(platform_pos, ball_pos)
+                print(error)
+                x_output = self.x_controller.get_output(error[0][0])
+                y_output = self.y_controller.get_output(error[1][0])
+                data = np.array([[8, x_output, y_output]], dtype=np.float64)
+                sock.sendto(data.tobytes(), address)
+
+            cv2.imshow('frame', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
             # Compute the FPS
             count += 1
@@ -53,6 +61,10 @@ class BallBalancer:
                 start = time.time()
 
 
+
+            
+
+
 if __name__ == "__main__":
     balancer = BallBalancer()
-    balancer.loop()
+    balancer.main_loop()

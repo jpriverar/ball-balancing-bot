@@ -6,6 +6,7 @@ from picamera2 import Picamera2
 import select
 import numpy as np
 from manipulator import RRSManipulator
+from utils import load_calibration_params
 
 def init_camera_with_opencv():
     cap = cv2.VideoCapture(0)  # Use 0 for the default camera or specify the video file path
@@ -23,6 +24,14 @@ def init_camera_with_picamera2():
     time.sleep(3)
     return cap
 
+params = load_calibration_params()['manipulator']
+bot = RRSManipulator(params['base_radius'],
+                     params['platform_radius'],
+                     params['low_arm_length'],
+                     params['high_arm_length'])
+
+bot.set_motor_angles([90,90,90])
+bot.home()
 
 # Stream socket connection
 host = "192.168.100.192"

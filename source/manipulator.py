@@ -24,7 +24,7 @@ class RRSManipulator:
 
 
     def home(self) -> None:
-        self.move_pose(8,0,0)
+        self.move_pose(8.5,0,0)
         time.sleep(5)
    
 
