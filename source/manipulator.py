@@ -42,6 +42,16 @@ class RRSManipulator:
             stepper.move_angle(angle)
 
 
+    def calibrate(self, steps: list) -> None:
+        if len(steps) != 3:
+            raise ValueError('Expected list of 3 step,dir tuples...')
+        
+        # All the angles to the end stop and set them to -20 deg
+        for stepper in self.steppers:
+            stepper.move(1, 10)
+        self.set_motor_angles([-20.0, -20.0, -20.0])
+
+
     def get_motor_angles(self) -> list[float]:
         return [stepper.angle for stepper in self.steppers]    
 
@@ -95,12 +105,9 @@ if __name__ == '__main__':
                    high_arm_length = 9.0)
     
 
-    bot.set_motor_angles([90,90,90])
+    bot.calibrate()
     bot.home()
-    print(bot.get_motor_angles())
-    print()
     time.sleep(3)
-    #bot.set_motor_angle(bot.steppers[2], 20)
 
     offsets = np.ones(50)*8
     x_angles = 10*np.sin(np.linspace(0, 6*np.pi, 50))
