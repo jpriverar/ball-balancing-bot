@@ -42,13 +42,11 @@ class RRSManipulator:
             stepper.move_angle(angle)
 
 
-    def calibrate(self, steps: list) -> None:
-        if len(steps) != 3:
-            raise ValueError('Expected list of 3 step,dir tuples...')
-        
+    def calibrate(self) -> None:
         # All the angles to the end stop and set them to -20 deg
         for stepper in self.steppers:
-            stepper.move(1, 10)
+            stepper.move_angle(-5)
+        time.sleep(1)
         self.set_motor_angles([-20.0, -20.0, -20.0])
 
 

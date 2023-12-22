@@ -18,7 +18,7 @@ def init_camera_with_opencv():
 
 def init_camera_with_picamera2():
     cap = Picamera2()
-    config = cap.create_preview_configuration(main={"size":(1920, 1080), "format":"RGB888"}, controls={"FrameRate":30})
+    config = cap.create_preview_configuration(main={"size":(1920, 1080), "format":"RGB888"}, controls={"FrameRate":90})
     cap.configure(config)
     cap.start()
     time.sleep(3)
@@ -30,7 +30,7 @@ bot = RRSManipulator(params['base_radius'],
                      params['low_arm_length'],
                      params['high_arm_length'])
 
-bot.set_motor_angles([90,90,90])
+bot.calibrate()
 bot.home()
 
 # Stream socket connection
@@ -63,6 +63,7 @@ while True:
         data_raw = sock.recvfrom(512)[0]
         data = np.frombuffer(data_raw, dtype=np.float64)
         print(data)
+        bot.move_pose(data[0], data[1], -data[2]) 
     
     counter += 1
     if (counter % 20 == 0):
