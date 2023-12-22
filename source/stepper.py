@@ -81,13 +81,13 @@ class Stepper:
 
             # 500 us square pulse
             GPIO.output(self.step_pin, 1)
-            time.sleep(0.0005)
+            time.sleep(0.005)
             GPIO.output(self.step_pin, 0)
-            time.sleep(0.0005)
+            time.sleep(0.005)
             self.angle += degrees_per_step
 
             # Delay to control speed
-            delay = 0.005 - (0.004*(steps-i)/steps) 
+            delay = max(0, 0.0005 - (0.0005*(steps-i)/steps)) 
             time.sleep(delay)
         self.moving.clear()
 
