@@ -1,6 +1,5 @@
 import RPi.GPIO as GPIO
 import time
-from threading import Thread, Lock, Event
 import numpy as np
 
 class Stepper:
@@ -13,10 +12,6 @@ class Stepper:
         self.__dir_pin = dir_pin
         self.__ms1 = ms1_pin
         self.__ms2 = ms2_pin
-        self.angle = starting_angle
-        self.move_lock = Lock()
-        self.stop_signal = Event()
-        self.moving = Event()
 
         GPIO.setup(self.step_pin, GPIO.OUT)
         GPIO.setup(self.dir_pin, GPIO.OUT)
@@ -98,7 +93,7 @@ class Stepper:
             GPIO.output(self.__dir_pin, 0)
         else:
             GPIO.output(self.__dir_pin, 1)
-            
+
         self.__speed = speed
         self.__step_interval = abs(1 / self.__speed)    
 
