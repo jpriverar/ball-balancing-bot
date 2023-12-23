@@ -13,10 +13,10 @@ class Stepper:
         self.__ms1 = ms1_pin
         self.__ms2 = ms2_pin
 
-        GPIO.setup(self.step_pin, GPIO.OUT)
-        GPIO.setup(self.dir_pin, GPIO.OUT)
-        GPIO.setup(self.ms1, GPIO.OUT)
-        GPIO.setup(self.ms2, GPIO.OUT)
+        GPIO.setup(self.__step_pin, GPIO.OUT)
+        GPIO.setup(self.__dir_pin, GPIO.OUT)
+        GPIO.setup(self.__ms1, GPIO.OUT)
+        GPIO.setup(self.__ms2, GPIO.OUT)
 
         # 16 microstepping by default - maximum precission and quiet
         self.set_ustep(16)
@@ -24,11 +24,11 @@ class Stepper:
         # Setting default current and target pos, speed and acceleration
         self.__curr_pos = 0
         self.__target_pos = 0 
-        self.__speed = 0
-        self.__accel = 0
+        self.__speed = 0.0
+        self.__accel = 1.0
         self.__step_interval = 0
         self.__last_step_time = 0
-        self.__max_speed = 0
+        self.__max_speed = 1.0
 
     # Getters
 
@@ -95,7 +95,8 @@ class Stepper:
             GPIO.output(self.__dir_pin, 1)
 
         self.__speed = speed
-        self.__step_interval = abs(1 / self.__speed)    
+        if speed != 0:
+            self.__step_interval = abs(1 / self.__speed)    
 
     # Methods    
 
@@ -129,14 +130,14 @@ class Stepper:
             if self.__speed == 0:
                 required_speed = np.sqrt(2.0 * self.__accel)
             else:
-                required_speed = np.min(self.__max_speed, self.__speed + abs(self.__accel / self.__speed))
+                required_speed = min(self.__max_speed, self.__speed + abs(self.__accel / self.__speed))
 
         # Need to accelerate counter clockwise
         elif required_speed < self.__speed:
             if self.__speed == 0:
                 required_speed = -np.sqrt(2.0 * self.__accel)
             else:
-                required_speed = np.max(-self.__max_speed, self.__speed - abs(self.__accel / self.__speed))
+                required_speed = max(-self.__max_speed, self.__speed - abs(self.__accel / self.__speed))
 
         return required_speed
     
@@ -178,17 +179,24 @@ class Stepper:
 if __name__ == '__main__':
 
     GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
 
     stepper1 = Stepper(23, 18, 25, 24)
-    stepper2 = Stepper(27, 22, 4, 17)
-    stepper3 = Stepper(5, 6, 19, 13)
+#    stepper2 = Stepper(27, 22, 4, 17)
+#    stepper3 = Stepper(5, 6, 19, 13)
 
-    steppers = (stepper1, stepper2, stepper3)
+#    steppers = (stepper1, stepper2, stepper3)
 
-    angle = 10
+#    angle = 10
+    stepper1.move_to(-200)
+    stepper1.set_max_speed(500)
+    stepper1.set_acceleration(100)
     while True:
-        for stepper in steppers:
-            stepper.move_angle(angle)
-        angle *= -1
+        if stepper1.distance_to_go == 0:
+            stepper1.move_to(-stepper1.current_position)
+        stepper1.run()
+        #for stepper in steppers:
+        #    stepper.move_angle(angle)
+        #angle *= -1
 
 
