@@ -3,6 +3,7 @@ import RPi.GPIO as GPIO
 from stepper import Stepper
 from inverse_kinematics import transformation_matrix_homogenous, compute_alpha, compute_theta
 import time
+from threading import Thread
 
 class RRSManipulator:
     def __init__(self, base_radius: float, platform_radius: float, low_arm_length: float, high_arm_length: float) -> None:
@@ -21,7 +22,11 @@ class RRSManipulator:
 
         self.offset = 0
         self.x_angle = 0
-        self.y_angle = 0        
+        self.y_angle = 0   
+
+        for stepper in self.steppers:
+            th = Thread(target=stepper.loop, args=[], daemon=True)
+            th.start()     
 
 
     def home(self) -> None:
@@ -39,24 +44,26 @@ class RRSManipulator:
             raise ValueError('Expected list of 3 angles...')
 
         for stepper, angle in zip(self.steppers, angles):
-            stepper.move_angle(angle)
+            position = stepper.degrees_to_steps(angle)
+            stepper.move_to(position)
 
 
     def calibrate(self) -> None:
         # All the angles to the end stop and set them to -20 deg
         for stepper in self.steppers:
-            stepper.move_angle(-5)
+            stepper.move_to(-25) # 25 steps downwards
         time.sleep(1)
         self.set_motor_angles([-20.0, -20.0, -20.0])
 
 
     def get_motor_angles(self) -> list[float]:
-        return [stepper.angle for stepper in self.steppers]    
+        return [stepper.steps_to_degrees(stepper.current_position) for stepper in self.steppers]    
 
 
     def set_motor_angles(self, angles: list[float]) -> None:
         for stepper, angle in zip(self.steppers, angles):
-            stepper.set_angle(angle)
+            position = stepper.degrees_to_steps(angle)
+            stepper.set_current_position(position)
 
 
     def compute_motor_angles(self, offset: float, x_angle: float, y_angle: float) -> list[float]:

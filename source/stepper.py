@@ -24,7 +24,7 @@ class Stepper:
         self.__target_pos = 0 
         self.__speed = 0.0
         self.__accel = 1.0
-        self.__step_interval = 0
+        self.__step_interval = 0.1
         self.__last_step_time = 0
         self.__max_speed = 1.0
 
@@ -48,6 +48,10 @@ class Stepper:
     @property
     def speed(self) -> float:
         return self.__speed
+    
+    @property
+    def delay(self) -> float:
+        return self.__step_interval
     
     # Setters
 
@@ -161,10 +165,11 @@ class Stepper:
             self.compute_new_speed()
         return True
     
-    
-    def run_to_position(self, position : int) -> None:
-        while self.run():
-            pass
+
+    def loop(self) -> None:
+        while True:
+            self.run()
+            time.sleep(self.__step_interval)
     
 
     def step(self) -> None:
@@ -177,6 +182,11 @@ class Stepper:
     def degrees_to_steps(self, degrees: float) -> int:
         steps = int((degrees * Stepper.STEPS_PER_REV * self.ustep)/360)
         return steps
+    
+    
+    def steps_to_degrees(self, steps: int) -> float:
+        degrees = (steps * 360)/(Stepper.STEPS_PER_REV * self.ustep)
+        return degrees
 
     
 if __name__ == '__main__':
