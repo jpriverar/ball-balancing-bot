@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 from stepper import Stepper
 from inverse_kinematics import transformation_matrix_homogenous, compute_alpha, compute_theta
 import time
-from threading import Thread
+from multiprocessing import Process, Queue
 
 class RRSManipulator:
     def __init__(self, base_radius: float, platform_radius: float, low_arm_length: float, high_arm_length: float) -> None:
@@ -24,15 +24,56 @@ class RRSManipulator:
         self.x_angle = 0
         self.y_angle = 0   
 
-        for stepper in self.steppers:
-            th = Thread(target=stepper.loop, args=[], daemon=True)
-            th.start()     
+        self.control_queue = Queue()
+        control_process = Process(target=self.motor_control_loop, args=(self.steppers, self.control_queue), daemon=True)
+        control_process.start()
+
+        
+    def motor_control_loop(self, steppers, queue) -> None:
+        while True:
+            while not queue.empty():
+                item = queue.get()
+                print('Got new item:', item)
+                
+                key, val = item.popitem()
+                if key == 'move_angle': 
+                    for stepper, angle in zip(steppers, val):
+                        position = stepper.degrees_to_steps(angle)
+                        speed = abs((position - stepper.current_position) * 20)
+                        accel = speed * 30
+                         
+                        stepper.set_max_speed(speed)
+                        stepper.set_acceleration(accel)
+                        stepper.move_to(position)
+
+                elif key == 'set_angle':
+                    for stepper, angle in zip(steppers, val):
+                        position = stepper.degrees_to_steps(angle)
+                        stepper.set_current_position(position)
+
+                elif key == 'move_to':
+                    for stepper, pos in zip(steppers, val):
+                        stepper.move_to(pos)
+
+                elif key == 'set_max_speed':
+                    for stepper, speed in zip(steppers, val):
+                        stepper.set_max_speed(speed)
+
+                elif key == 'set_acceleration':
+                    for stepper, accel in zip(steppers, val):
+                        stepper.set_acceleration(accel)
+
+            for stepper in steppers:
+                print(stepper.distance_to_go, end=" ")
+                stepper.run()
+            print()
 
 
     def home(self) -> None:
+        print("Homing...")
         self.move_pose(8.5,0,0)
         time.sleep(5)
-   
+
 
     def move_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
         angles = self.compute_motor_angles(offset, x_angle, y_angle)
@@ -42,17 +83,16 @@ class RRSManipulator:
     def move_motor_angles(self, angles: list[float]) -> None:
         if len(angles) != 3:
             raise ValueError('Expected list of 3 angles...')
-
-        for stepper, angle in zip(self.steppers, angles):
-            position = stepper.degrees_to_steps(angle)
-            stepper.move_to(position)
+        
+        self.control_queue.put({'move_angle': angles})
 
 
     def calibrate(self) -> None:
-        # All the angles to the end stop and set them to -20 deg
-        for stepper in self.steppers:
-            stepper.move_to(-25) # 25 steps downwards
-        time.sleep(1)
+        print("Calibrating...")
+        self.control_queue.put({'set_max_speed': [100,100,100]})
+        self.control_queue.put({'set_acceleration': [50,50,50]})
+        self.control_queue.put({'move_to': [-25,-25,-25]})
+        time.sleep(3)
         self.set_motor_angles([-20.0, -20.0, -20.0])
 
 
@@ -61,9 +101,7 @@ class RRSManipulator:
 
 
     def set_motor_angles(self, angles: list[float]) -> None:
-        for stepper, angle in zip(self.steppers, angles):
-            position = stepper.degrees_to_steps(angle)
-            stepper.set_current_position(position)
+        self.control_queue.put({'set_angle': angles})
 
 
     def compute_motor_angles(self, offset: float, x_angle: float, y_angle: float) -> list[float]:
@@ -104,6 +142,7 @@ class RRSManipulator:
 
 if __name__ == '__main__':
 
+    GPIO.setwarnings(False)
     bot = RRSManipulator(base_radius = 6.0,
                    platform_radius = 8.0,
                    low_arm_length = 4.5,
@@ -112,7 +151,6 @@ if __name__ == '__main__':
 
     bot.calibrate()
     bot.home()
-    time.sleep(3)
 
     offsets = np.ones(50)*8
     x_angles = 10*np.sin(np.linspace(0, 6*np.pi, 50))
@@ -125,9 +163,9 @@ if __name__ == '__main__':
     #    print()
     #    time.sleep(0.05)
     bot.move_pose(8.5, 0, 10)
-
     time.sleep(3)
+
     bot.home()
-    print(bot.get_motor_angles())
+    #print(bot.get_motor_angles())
 
     

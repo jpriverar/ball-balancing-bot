@@ -81,12 +81,12 @@ class Stepper:
 
     
     def set_max_speed(self, speed: float) -> None:
-        self.__max_speed = speed
+        self.__max_speed = max(1.0, speed)
         self.compute_new_speed()
 
 
     def set_acceleration(self, accel: float) -> None:
-        self.__accel = accel
+        self.__accel = max(1.0, accel)
         self.compute_new_speed()
 
 
@@ -164,13 +164,7 @@ class Stepper:
         if self.run_speed():
             self.compute_new_speed()
         return True
-    
 
-    def loop(self) -> None:
-        while True:
-            self.run()
-            time.sleep(self.__step_interval)
-    
 
     def step(self) -> None:
         GPIO.output(self.__step_pin, 1)
