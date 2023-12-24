@@ -3,9 +3,7 @@ import time
 import numpy as np
 
 class Stepper:
-    steps_per_revolution: int = 200
-    low_endstop: float = -20
-    high_endstop: float = 90 
+    STEPS_PER_REV: int = 200
 
     def __init__(self, step_pin: int, dir_pin: int, ms1_pin: int, ms2_pin: int, starting_angle: float = 0) -> None:
         self.__step_pin = step_pin
@@ -172,7 +170,7 @@ class Stepper:
 
 
     def degrees_to_steps(self, degrees: float) -> int:
-        steps = int((degrees * Stepper.steps_per_revolution * self.ustep)/360)
+        steps = int((degrees * Stepper.STEPS_PER_REV * self.ustep)/360)
         return steps
 
     
@@ -182,21 +180,33 @@ if __name__ == '__main__':
     GPIO.setwarnings(False)
 
     stepper1 = Stepper(23, 18, 25, 24)
-#    stepper2 = Stepper(27, 22, 4, 17)
-#    stepper3 = Stepper(5, 6, 19, 13)
+    stepper2 = Stepper(27, 22, 4, 17)
+    stepper3 = Stepper(5, 6, 19, 13)
 
-#    steppers = (stepper1, stepper2, stepper3)
+    steppers = (stepper1, stepper2, stepper3)
 
-#    angle = 10
-    stepper1.move_to(-200)
-    stepper1.set_max_speed(500)
-    stepper1.set_acceleration(100)
+    stepper1.move_to(-300)
+    stepper1.set_max_speed(1000)
+    stepper1.set_acceleration(500)
+
+    stepper2.move_to(-100)
+    stepper2.set_max_speed(100)
+    stepper2.set_acceleration(100)
+
+    stepper3.move_to(-400)
+    stepper3.set_max_speed(500)
+    stepper3.set_acceleration(500)
+
     while True:
         if stepper1.distance_to_go == 0:
             stepper1.move_to(-stepper1.current_position)
+
+        if stepper2.distance_to_go == 0:
+            stepper2.move_to(-stepper2.current_position)
+
+        if stepper3.distance_to_go == 0:
+            stepper3.move_to(-stepper3.current_position)
+
         stepper1.run()
-        #for stepper in steppers:
-        #    stepper.move_angle(angle)
-        #angle *= -1
-
-
+        stepper2.run()
+        stepper3.run()
