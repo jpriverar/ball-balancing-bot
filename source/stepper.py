@@ -161,6 +161,11 @@ class Stepper:
             self.compute_new_speed()
         return True
     
+    
+    def run_to_position(self, position : int) -> None:
+        while self.run():
+            pass
+    
 
     def step(self) -> None:
         GPIO.output(self.__step_pin, 1)
