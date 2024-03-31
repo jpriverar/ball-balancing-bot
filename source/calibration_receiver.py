@@ -215,15 +215,15 @@ if __name__ == "__main__":
             cv2.drawContours(hull_frame, [hull], 0, 255, 3)
 
             center, radius = cv2.minEnclosingCircle(hull)
-            center = tuple(map(int, center))
-            radius = int(radius)
-            cv2.circle(geo_frame, center, radius, (0,0,255), 2, lineType=cv2.LINE_AA)
+            platform_center = tuple(map(int, center))
+            platform_radius = int(radius)
+            cv2.circle(geo_frame, platform_center, platform_radius, (0,0,255), 2, lineType=cv2.LINE_AA)
 
             line_frame = np.zeros_like(platform_mask)
 
             for angle in np.linspace(30,330,6):
-                draw_polar_line(line_frame, center, radius, angle + platform_rotation)
-                draw_polar_line(geo_frame, center, radius, angle + platform_rotation)
+                draw_polar_line(line_frame, platform_center, platform_radius, angle + platform_rotation)
+                draw_polar_line(geo_frame, platform_center, platform_radius, angle + platform_rotation)
 
             intersections = cv2.bitwise_and(hull_frame, line_frame)
             intersection_contours, _ = cv2.findContours(intersections, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -234,10 +234,13 @@ if __name__ == "__main__":
                 cv2.circle(frame, (cx, cy), 3, (0,0,255), -1)
 
             center = get_contour_centroid(hull)
-            #x_point, y_point = get_platform_axes(intersection_points)
-            cv2.circle(frame, center, 3, (0,0,255), -1, lineType=cv2.LINE_AA)
-            #cv2.line(frame, center, y_point, (0,255,0), 2)
-            #cv2.line(frame, center, x_point, (0,255,255), 2)
+            try:
+                x_point, y_point = get_platform_axes(intersection_points)
+                cv2.circle(frame, center, 3, (0,0,255), -1, lineType=cv2.LINE_AA)
+                cv2.line(frame, center, y_point, (0,255,0), 2)
+                cv2.line(frame, center, x_point, (0,255,255), 2)
+            except Exception as e:
+                print("Error...")
 
         contours, _ = cv2.findContours(ball_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contours:
@@ -274,6 +277,8 @@ if __name__ == "__main__":
     params['platform']['brightness'] = platform_brightness
     params['platform']['contrast'] = platform_contrast
     params['platform']['rotation'] = platform_rotation
+    params['platform']['fixed_center'] = platform_center
+    params['platform']['fixed_radius'] = platform_radius
     params['ball']['low_threshold'] = ball_low_vals.tolist()
     params['ball']['high_threshold'] = ball_high_vals.tolist()
     params['ball']['brightness'] = ball_brightness
