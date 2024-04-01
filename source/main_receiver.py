@@ -52,10 +52,10 @@ class BallBalancer:
             # Compute the position error and output to compensate
             error = self.__get_error_vec(platform_pos, ball_pos)
             x_output = self.x_controller.get_output(error[0][0])
-            y_output = self.y_controller.get_output(-error[1][0])
+            y_output = self.y_controller.get_output(error[1][0])
 
             # Send the required angle to the bot
-            data = np.array([[9.0, x_output, y_output]], dtype=np.float32)
+            data = np.array([[9.0, -x_output, y_output]], dtype=np.float32)
             sock.sendto(data.tobytes(), address)
 
             cv2.imshow('frame', frame)

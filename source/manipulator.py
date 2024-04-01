@@ -40,7 +40,7 @@ class RRSManipulator:
                 if key == 'move_angle': 
                     for stepper, angle in zip(steppers, val):
                         position = stepper.degrees_to_steps(angle)
-                        speed = abs((position - stepper.current_position) * 20)
+                        speed = abs((position - stepper.current_position) * 50)
                         accel = speed * 30
                          
                         stepper.set_max_speed(speed)
