@@ -33,7 +33,6 @@ class RRSManipulator:
         while True:
             while not queue.empty():
                 item = queue.get()
-                print('Got new item:', item)
                 
                 key, val = item.popitem()
                 if key == 'move_angle': 
@@ -64,9 +63,7 @@ class RRSManipulator:
                         stepper.set_acceleration(accel)
 
             for stepper in steppers:
-                print(stepper.distance_to_go, end=" ")
                 stepper.run()
-            print()
 
 
     def home(self) -> None:
