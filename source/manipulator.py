@@ -35,6 +35,8 @@ class RRSManipulator:
                 item = queue.get()
                 
                 key, val = item.popitem()
+
+                # To move the motor computing speed and accel values
                 if key == 'move_angle': 
                     for stepper, angle in zip(steppers, val):
                         position = stepper.degrees_to_steps(angle)
@@ -44,20 +46,29 @@ class RRSManipulator:
                         stepper.set_max_speed(speed)
                         stepper.set_acceleration(accel)
                         stepper.move_to(position)
+                
+                # To move the motor using the current speed and accel values
+                elif key == 'move_angle_direct':
+                    for stepper, angle in zip(steppers, val):
+                        stepper.move_to(position)
 
+                # To set the internal angle variable of the motors
                 elif key == 'set_angle':
                     for stepper, angle in zip(steppers, val):
                         position = stepper.degrees_to_steps(angle)
                         stepper.set_current_position(position)
 
+                # To move the motor a certain number of steps
                 elif key == 'move_to':
                     for stepper, pos in zip(steppers, val):
                         stepper.move_to(pos)
 
+                # To set the max speed allowed per motor
                 elif key == 'set_max_speed':
                     for stepper, speed in zip(steppers, val):
                         stepper.set_max_speed(speed)
 
+                # To set the desired acceleration of the motor
                 elif key == 'set_acceleration':
                     for stepper, accel in zip(steppers, val):
                         stepper.set_acceleration(accel)
@@ -68,22 +79,13 @@ class RRSManipulator:
 
     def home(self) -> None:
         print("Homing...")
-        self.move_pose(8.5,0,0)
+        self.control_queue.put({'set_max_speed': [100, 100, 100]})
+        self.control_queue.put({'set_acceleration': [50,50,50]})
+        angles = self.compute_motor_angles(8.5, 0, 0)
+        self.move_motor_angles(angles, compute_values=False)
         time.sleep(5)
 
-
-    def move_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
-        angles = self.compute_motor_angles(offset, x_angle, y_angle)
-        self.move_motor_angles(angles)
-
     
-    def move_motor_angles(self, angles: list[float]) -> None:
-        if len(angles) != 3:
-            raise ValueError('Expected list of 3 angles...')
-        
-        self.control_queue.put({'move_angle': angles})
-
-
     def calibrate(self) -> None:
         print("Calibrating...")
         self.control_queue.put({'set_max_speed': [100,100,100]})
@@ -91,6 +93,21 @@ class RRSManipulator:
         self.control_queue.put({'move_to': [-25,-25,-25]})
         time.sleep(3)
         self.set_motor_angles([-20.0, -20.0, -20.0])
+
+
+    def move_pose(self, offset: float, x_angle: float, y_angle: float) -> None:
+        angles = self.compute_motor_angles(offset, x_angle, y_angle)
+        self.move_motor_angles(angles)
+
+    
+    def move_motor_angles(self, angles: list[float], compute_values: bool = True) -> None:
+        if len(angles) != 3:
+            raise ValueError('Expected list of 3 angles...')
+        
+        if compute_values:
+            self.control_queue.put({'move_angle': angles})
+        else:
+            self.control_queue.put({'move_angle_direct': angles})
 
 
     def get_motor_angles(self) -> list[float]:

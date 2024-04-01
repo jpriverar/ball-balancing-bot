@@ -21,7 +21,7 @@
         "contrast": 1,
         "alpha": 0.1,
         "fixed_center": [
-            159,
+            152,
             99
         ],
         "fixed_radius": 85
@@ -30,11 +30,11 @@
         "low_threshold": [
             0,
             0,
-            157
+            181
         ],
         "high_threshold": [
             255,
-            110,
+            182,
             255
         ],
         "brightness": 0,
