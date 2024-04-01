@@ -31,35 +31,43 @@ class BallBalancer:
     
     def main_loop(self):
         sock = listen_for_connection('0.0.0.0', 8080)
-        count = 0
+        frame_count = 0
         start = time.time()
+
         while True:
-            frame_data, address = sock.recvfrom(65536)
 
             # Convert the frame data back to a NumPy array
+            frame_data, address = sock.recvfrom(65536)
             frame_raw = np.frombuffer(frame_data, dtype=np.uint8)
             frame = cv2.imdecode(frame_raw, 1)
 
+            # Find ball position in the current frame and draw it
             platform_pos, ball_pos = self.__find_elements(frame)
-            if platform_pos and ball_pos: 
-                cv2.circle(frame, platform_pos, 1, (0,0,255), -1)
-                cv2.circle(frame, ball_pos, 1, (0,255,0), -1)
-                error = self.__get_error_vec(platform_pos, ball_pos)
-                x_output = self.x_controller.get_output(error[0][0])
-                y_output = self.y_controller.get_output(error[1][0])
-                data = np.array([[9.0, x_output, y_output]], dtype=np.float32)
-                sock.sendto(data.tobytes(), address)
+            if not platform_pos or not ball_pos:
+                continue 
+
+            cv2.circle(frame, platform_pos, 1, (0,0,255), -1)
+            cv2.circle(frame, ball_pos, 1, (0,255,0), -1)
+
+            # Compute the position error and output to compensate
+            error = self.__get_error_vec(platform_pos, ball_pos)
+            x_output = self.x_controller.get_output(error[0][0])
+            y_output = self.y_controller.get_output(error[1][0])
+
+            # Send the required angle to the bot
+            data = np.array([[9.0, x_output, y_output]], dtype=np.float32)
+            sock.sendto(data.tobytes(), address)
 
             cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
             # Compute the FPS
-            count += 1
-            if count % 20 == 0:
-                fps = count/(time.time() - start)
+            frame_count += 1
+            if frame_count % 20 == 0:
+                fps = frame_count/(time.time() - start)
                 print(f'fps: {fps}')
-                count = 0
+                frame_count = 0
                 start = time.time()
 
 

@@ -43,34 +43,27 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # Camera setup
 cap = init_camera_with_opencv()
 
-counter = 0
+frame_counter = 0
 start = time.time()
 while True:
+
+    # Capture and send the image
     ret, frame = cap.read()
-    #frame = cap.capture_array('main')
-    #frame = frame[80:420,100:500,:] # Taking only the roi
+    if not ret: 
+        print("Something went wrong: could not capture frame...")
+        break
 
-    # Serialize the image
+    # Serialize the image and send it
     _, frame_data = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-    frame_data = frame_data.tobytes()
+    sock.sendto(frame_data.tobytes(), (host, port))
 
-    # Pack it along with the image size
-    #frame_size = struct.pack("!L", len(frame_data))    
-    sock.sendto(frame_data, (host, port))
-
+    # Read control messages if any
     ready, _, _ = select.select([sock], [], [], 0)
     if ready:
         data_raw = sock.recvfrom(512)[0]
-        data = np.frombuffer(data_raw, dtype=np.float64)
+        data = np.frombuffer(data_raw, dtype=np.float32)
         print(data)
         bot.move_pose(data[0], data[1], -data[2]) 
-    
-    counter += 1
-    if (counter % 20 == 0):
-        fps = counter/(time.time() - start)
-        print(f"fps: {fps}")
-        counter = 0
-        start = time.time()
 
 # Release the video capture and close the socket when done
 cap.release()
