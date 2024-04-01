@@ -63,7 +63,7 @@ while True:
         data_raw = sock.recvfrom(512)[0]
         data = np.frombuffer(data_raw, dtype=np.float32)
         print(data)
-        bot.move_pose(data[0], data[1], -data[2]) 
+        bot.move_pose(data[0], data[1], data[2]) 
 
     # Update the fps 
     frame_counter += 1

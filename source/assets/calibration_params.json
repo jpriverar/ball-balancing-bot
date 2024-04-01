@@ -21,10 +21,10 @@
         "contrast": 1,
         "alpha": 0.1,
         "fixed_center": [
-            152,
-            99
+            163,
+            102
         ],
-        "fixed_radius": 85
+        "fixed_radius": 82
     },
     "ball": {
         "low_threshold": [
