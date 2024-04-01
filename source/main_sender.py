@@ -65,6 +65,14 @@ while True:
         print(data)
         bot.move_pose(data[0], data[1], -data[2]) 
 
+    # Update the fps 
+    frame_counter += 1
+    if (frame_counter % 20 == 0):
+        fps = frame_counter/(time.time() - start)
+        print(f"fps: {fps}")
+        frame_counter = 0
+        start = time.time()
+
 # Release the video capture and close the socket when done
 cap.release()
 sock.close()
