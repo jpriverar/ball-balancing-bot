@@ -50,6 +50,7 @@ class RRSManipulator:
                 # To move the motor using the current speed and accel values
                 elif key == 'move_angle_direct':
                     for stepper, angle in zip(steppers, val):
+                        position = stepper.degrees_to_steps(angle)
                         stepper.move_to(position)
 
                 # To set the internal angle variable of the motors
